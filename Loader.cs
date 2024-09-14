@@ -158,14 +158,34 @@ namespace Dawnsbury.Mods.Ancestries.Nagaji {
             });
 
             yield return new TrueFeat(ModManager.RegisterFeatName("Nagaji Venom Lore"), 1, "You've studied the closely guarded secrets of naga venom, allowing you to enhance poisons in your possession.",
-                "Bombs thrown by you with the poison trait, deal an additional die of damage.\n\nIn addition, you are trained with bombs and for the purpose of determining your proficiency, bombs are simple weapons for you.", new Trait[] { tNagaji, Trait.Homebrew, Trait.Poison }, null)
+                "The first bomb with the poison trait that you throw each day deals an additional die of damage, thanks to your modifications." +
+                "\n\nIn addition, you are trained with bombs and for the purpose of determining your proficiency, bombs are simple weapons for you.", new Trait[] { tNagaji, Trait.Homebrew, Trait.Poison }, null)
             .WithOnSheet((Action<CalculatedCharacterSheetValues>) (sheet => {
                 sheet.Proficiencies.Set(Trait.Bomb, Proficiency.Trained);
                 sheet.Proficiencies.AddProficiencyAdjustment((Func<List<Trait>, bool>)(item => item.Contains(Trait.Bomb)), Trait.Simple);
             }))
             .WithOnCreature(creature => {
                 creature.AddQEffect(new QEffect("Nagaji Venom Lore", "Bombs with the poison trait deal an additional damage die.") {
-                    IncreaseItemDamageDieCount = (self, item) => item.HasTrait(Trait.Bomb) && item.HasTrait(Trait.Poison)
+                    StartOfCombat = async self => {
+                        if (self.Owner.PersistentUsedUpResources.UsedUpActions.Contains("Nagaji Venom Lore")) {
+                            self.Name += " (Expended)";
+                        }
+                    },
+                    IncreaseItemDamageDieCount = (self, item) => {
+                        if (!self.Owner.PersistentUsedUpResources.UsedUpActions.Contains("Nagaji Venom Lore") && item.HasTrait(Trait.Bomb) && item.HasTrait(Trait.Poison)) {
+                            return true;
+                        }
+                        return false;
+                    },
+                    AfterYouDealDamage = async (owner, action, target) => {
+                        if (owner.PersistentUsedUpResources.UsedUpActions.Contains("Nagaji Venom Lore")) {
+                            return;
+                        }
+                        if (action.Item != null && action.Item.WeaponProperties != null && action.Item.HasTrait(Trait.Bomb) && action.Item.HasTrait(Trait.Poison)) {
+                            owner.PersistentUsedUpResources.UsedUpActions.Add("Nagaji Venom Lore");
+                            owner.QEffects.FirstOrDefault(qf => qf.Name == "Nagaji Venom Lore").Name += " (Expended)";
+                        }
+                    }
                 });
             });
 
