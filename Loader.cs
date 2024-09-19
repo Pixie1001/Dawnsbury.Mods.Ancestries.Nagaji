@@ -320,7 +320,7 @@ namespace Dawnsbury.Mods.Ancestries.Nagaji {
                         if (action == null)
                             return null;
 
-                        if (action.ActionId == ActionId.Trip || action.ActionId == ActionId.Grapple || action.Traits.FirstOrDefault(t => new Trait[] { Trait.Trip, Trait.Grab }.Contains(t)) != null) {
+                        if (action.ActionId == ActionId.Trip || action.ActionId == ActionId.Grapple || action.Traits.FirstOrDefault(t => new Trait[] { Trait.Trip, Trait.Grab }.Contains(t)) != Trait.None) {
                             return new Bonus(2, BonusType.Circumstance, "Sacred Nagaji");
                         }
                         return null;
