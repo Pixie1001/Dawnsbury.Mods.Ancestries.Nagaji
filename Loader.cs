@@ -116,7 +116,7 @@ namespace Dawnsbury.Mods.Ancestries.Nagaji {
 
         private static IEnumerable<Feat> CreateFeats() {
             // Main ancestry
-            yield return new AncestrySelectionFeat(ModManager.RegisterFeatName("Nagaji"), flavourText, new List<Trait> { tNagaji, Trait.Humanoid }, 10, 5, new List<AbilityBoost>() { new EnforcedAbilityBoost(Ability.Strength), new FreeAbilityBoost() }, LoadHeritages().ToList());
+            yield return new AncestrySelectionFeat(ModManager.RegisterFeatName("Nagaji", "Nagaji"), flavourText, new List<Trait> { tNagaji, Trait.Humanoid }, 10, 5, new List<AbilityBoost>() { new EnforcedAbilityBoost(Ability.Strength), new FreeAbilityBoost() }, LoadHeritages().ToList());
 
             // Ancestry feats
             yield return new TrueFeat(ModManager.RegisterFeatName("Cold Minded"), 1, "The subtle strands of beguiling magic leave little impression on your mind.",
@@ -300,8 +300,8 @@ namespace Dawnsbury.Mods.Ancestries.Nagaji {
                 creature.AddQEffect(new QEffect() {
                     AdditionalUnarmedStrike = new Item(IllustrationName.AcidSplash, "Venomous Spit", new Trait[] { Trait.Unarmed, Trait.Ranged }).WithWeaponProperties(new WeaponProperties("1d4", DamageKind.Poison) { Sfx = SfxName.AcidSplash, VfxStyle = new VfxStyle(1, ProjectileKind.Arrow, IllustrationName.AcidSplash ) }.WithRangeIncrement(2)),
                     AfterYouDealDamage = async (user, action, target) => {
-                        if (action.Item != null && action.Item.Name == "Venomous Spit") {
-                            int damage = action.Item.WeaponProperties.DamageDieCount;
+                        if (action.Item != null && action.Item.Name == "Venomous Spit" && action.CheckResult == CheckResult.CriticalSuccess) {
+                            int damage = action.TrueDamageFormula.ToString()[0] - '0';
                             target.AddQEffect(QEffect.PersistentDamage($"{damage}", DamageKind.Poison));
                         }
                     }
